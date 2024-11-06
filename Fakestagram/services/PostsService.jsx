@@ -1,10 +1,9 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const URL = "http://<TU_IP_LOCAL>:3001/api/";
+const URL = "http://localhost:3001/api/";
 
 export const getPosts = async () => {
     try {
-        const token = await AsyncStorage.getItem('token');
+        const token = localStorage.getItem('token');
+
         if (!token) {
             return { success: false, message: 'Token no disponible. Por favor, inicia sesión.' };
         }
@@ -26,11 +25,17 @@ export const getPosts = async () => {
                 "_id": "634f1b5c8f25c32a5cd55f9b",
                 "user": "67164d72b74dbed6366e3f24",
                 "content": "Este es un post de ejemplo",
-                "likes": ["67164d72b74dbed6366e3f24"],
+                "likes": [
+                  "67164d72b74dbed6366e3f24"
+                ],
                 "createdAt": "2024-10-05T15:21:34.788Z",
                 "image": "https://i.pinimg.com/564x/67/61/a4/6761a4439c65d86e6fa0cd5c75a3679d.jpg"
-            });
-            return { success: true, message: 'Posts obtenidos con éxito', data: posts };
+              })
+            return { 
+                success: true, 
+                message: 'Posts obtenidos con éxito', 
+                data: posts 
+            };
         }
 
         return { success: false, message: `Error inesperado: ${res.status}` };
@@ -39,9 +44,19 @@ export const getPosts = async () => {
     }
 };
 
+
+
+
+
+
+
+
+
+
 export const commentPost = async (comment, postID) => {
     try {
-        const token = await AsyncStorage.getItem('token');
+        const token = localStorage.getItem('token');
+
         if (!token) {
             return { success: false, message: 'Token no disponible. Por favor, inicia sesión.' };
         }
@@ -67,7 +82,11 @@ export const commentPost = async (comment, postID) => {
 
         if (res.status === 201) {
             const data = await res.json();
-            return { success: true, message: 'Comentario publicado exitosamente', data };
+            return { 
+                success: true, 
+                message: 'Comentario publicado exitosamente', 
+                data 
+            };
         }
 
         return { success: false, message: `Error inesperado: ${res.status}` };
@@ -76,9 +95,15 @@ export const commentPost = async (comment, postID) => {
     }
 };
 
+
+
+
+
+
 export const removeComment = async (commentID, postID) => {
     try {
-        const token = await AsyncStorage.getItem('token');
+        const token = localStorage.getItem('token');
+
         if (!token) {
             return { success: false, message: 'Token no disponible. Por favor, inicia sesión.' };
         }
@@ -100,7 +125,11 @@ export const removeComment = async (commentID, postID) => {
 
         if (res.status === 200) {
             const data = await res.json();
-            return { success: true, message: 'Comentario eliminado exitosamente', data };
+            return { 
+                success: true, 
+                message: 'Comentario eliminado exitosamente', 
+                data 
+            };
         }
 
         return { success: false, message: `Error inesperado: ${res.status}` };
@@ -109,9 +138,14 @@ export const removeComment = async (commentID, postID) => {
     }
 };
 
+
+
+
+
 export const getComment = async (commentID) => {
     try {
-        const token = await AsyncStorage.getItem('token');
+        const token = localStorage.getItem('token');
+
         if (!token) {
             return { success: false, message: 'Token no disponible. Por favor, inicia sesión.' };
         }
@@ -127,20 +161,30 @@ export const getComment = async (commentID) => {
             return { success: false, message: 'Comentario no encontrado' };
         }
 
-        if (res.status === 200) {
+        if (res.status === 201) {
             const data = await res.json();
-            return { success: true, message: 'Comentario obtenido exitosamente', data };
+            return { 
+                success: true, 
+                message: 'Comentario obtenido exitosamente', 
+                data 
+            };
         }
 
         return { success: false, message: `Error inesperado: ${res.status}` };
     } catch (error) {
         return { success: false, message: `Error de conexión: ${error.message}` };
     }
-};
+}
+
+
+
+
+
 
 export const likePost = async (postID) => {
     try {
-        const token = await AsyncStorage.getItem('token');
+        const token = localStorage.getItem('token');
+
         if (!token) {
             return { success: false, message: 'Token no disponible. Por favor, inicia sesión.' };
         }
@@ -162,7 +206,11 @@ export const likePost = async (postID) => {
 
         if (res.status === 201) {
             const data = await res.json();
-            return { success: true, message: 'Like agregado exitosamente', data };
+            return { 
+                success: true, 
+                message: 'Like agregado exitosamente', 
+                data 
+            };
         }
 
         return { success: false, message: `Error inesperado: ${res.status}` };
@@ -171,9 +219,13 @@ export const likePost = async (postID) => {
     }
 };
 
+
+
+
 export const removeLike = async (postID) => {
     try {
-        const token = await AsyncStorage.getItem('token');
+        const token = localStorage.getItem('token');
+
         if (!token) {
             return { success: false, message: 'Token no disponible. Por favor, inicia sesión.' };
         }
@@ -195,7 +247,11 @@ export const removeLike = async (postID) => {
 
         if (res.status === 200) {
             const data = await res.json();
-            return { success: true, message: 'Like eliminado exitosamente', data };
+            return { 
+                success: true, 
+                message: 'Like eliminado exitosamente', 
+                data 
+            };
         }
 
         return { success: false, message: `Error inesperado: ${res.status}` };
@@ -204,46 +260,3 @@ export const removeLike = async (postID) => {
     }
 };
 
-
-
-
-
-export const uploadPost = async (imageUri, caption) => {
-    try {
-        const token = await AsyncStorage.getItem('token');
-        if (!token) {
-            return { success: false, message: 'Token no disponible. Por favor, inicia sesión.' };
-        }
-
-        const formData = new FormData();
-        formData.append('caption', caption);
-
-        // Configuración del archivo para el backend
-        const fileName = imageUri.split('/').pop();
-        const fileType = imageUri.split('.').pop();
-
-        formData.append('image', {
-            uri: imageUri,
-            name: fileName,
-            type: `image/${fileType}`,
-        });
-
-        const res = await fetch(`${URL}posts/upload`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'multipart/form-data',
-            },
-            body: formData,
-        });
-
-        if (res.status === 201) {
-            const data = await res.json();
-            return { success: true, message: 'Imagen subida exitosamente', data };
-        }
-
-        return { success: false, message: `Error inesperado: ${res.status}` };
-    } catch (error) {
-        return { success: false, message: `Error de conexión: ${error.message}` };
-    }
-};

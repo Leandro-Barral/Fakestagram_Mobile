@@ -1,6 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const URL = "http://<TU_IP_LOCAL>:3001/api/";
+const URL = "http://localhost:3001/api/";
 
 export const register = async (registerData) => {
     try {
@@ -36,7 +34,6 @@ export const register = async (registerData) => {
 
 
 
-
 export const login = async (loginData) => {
     try {
         const res = await fetch(`${URL}auth/login`, {
@@ -54,10 +51,10 @@ export const login = async (loginData) => {
         if (res.ok) {
             const data = await res.json();
             console.log(data);
-            //Manejo de Token con Async Storage
+            //Manejo de Token con Local Storage
             if (data.token && data._id) {
-                AsyncStorage.setItem('token', data.token);
-                AsyncStorage.setItem('userId', data._id);
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('userId', data._id);
                 return {
                     success: true,
                     message: 'Login exitoso',
@@ -79,15 +76,9 @@ export const login = async (loginData) => {
 
 
 
-
-
-
-
-
-
 export const getUser = async (id) => {
     try {
-        const token = AsyncStorage.getItem('token');
+        const token = localStorage.getItem('token');
 
         if (!token) {
             return { success: false, message: 'Token no disponible. Por favor, inicia sesión.' };
@@ -123,7 +114,7 @@ export const getUser = async (id) => {
 
 export const putUser = async (id, newData) => {
     try {
-        const token = AsyncStorage.getItem('token');
+        const token = localStorage.getItem('token');
 
         if (!token) {
             return { success: false, message: 'Token no disponible. Por favor, inicia sesión.' };
