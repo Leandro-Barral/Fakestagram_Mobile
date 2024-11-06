@@ -3,7 +3,12 @@ import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet } from 'reac
 import { useNavigation } from '@react-navigation/native';
 import { register } from '../../services/UsersService';
 
-const RegisterModal = ({ isOpen, onClose }) => {
+interface RegisterModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
@@ -25,7 +30,6 @@ const RegisterModal = ({ isOpen, onClose }) => {
 
     const handleClose = () => {
         onClose();
-        navigation.navigate('Home'); // Cambia 'Home' a la ruta adecuada en tu app
     };
 
     if (!isOpen) return null;
