@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getUser } from "@/services/UsersService";
 import { commentPost, getPosts, likePost } from "../../Services/PostsService";
+import { StyleSheet } from "react-native";
 
 const Post = ({ postId }) => {
     // Verificar si el componente se está utilizando con un parámetro de URL
@@ -95,16 +96,16 @@ const Post = ({ postId }) => {
     
 
     return (
-        <div className={styles.post}>
-            <div className={styles.profileInfo}>
+        <div style={styles.post}>
+            <div style={styles.profileInfo}>
                 <img
                     src={exampleImage}
                     alt={"Foto de Perfil de " + userData.username}
-                    className={styles.profileImage}
+                    style={styles.profileImage}
                 />
-                <h2 className={styles.username}>{userData.username}</h2>
+                <h2 style={styles.username}>{userData.username}</h2>
 
-                <button onClick={toggleOptions} className={styles.optionsButton}>
+                <button onClick={toggleOptions} style={styles.optionsButton}>
                     <svg width="20" height="20" viewBox="0 0 24 24">
                         <circle cx="5" cy="12" r="2" />
                         <circle cx="12" cy="12" r="2" />
@@ -113,11 +114,11 @@ const Post = ({ postId }) => {
                 </button>
 
                 {optionsVisible && (
-                    <div className={styles.modal}>
-                        <div className={styles.modalContent}>
-                            <span className={styles.close} onClick={closeOptions}>&times;</span>
-                            <button onClick={() => {/* lógica para compartir */ }} className={styles.submitButton}>Compartir</button>
-                            <button onClick={() => {/* lógica para reportar */ }} className={styles.submitButton}>Reportar</button>
+                    <div style={styles.modal}>
+                        <div style={styles.modalContent}>
+                            <span style={styles.close} onClick={closeOptions}>&times;</span>
+                            <button onClick={() => {/* lógica para compartir */ }} style={styles.submitButton}>Compartir</button>
+                            <button onClick={() => {/* lógica para reportar */ }} style={styles.submitButton}>Reportar</button>
                         </div>
                     </div>
                 )}
@@ -127,11 +128,10 @@ const Post = ({ postId }) => {
                 style={{ borderRadius: "8px", width: "100%", height: "100%" }}
                 src={postData.image}
                 alt={`Publicación ${postId}`}
-                className={styles.postImage}
             />
 
-            <div className={styles.actions}>
-                <button onClick={handleLike} className={styles.actionButton}>
+            <div style={styles.actions}>
+                <button onClick={handleLike} style={styles.actionButton}>
                     {liked ? (
                         <svg width="24" height="24" fill="red" viewBox="0 0 24 24">
                             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
@@ -143,79 +143,158 @@ const Post = ({ postId }) => {
                     )}
                 </button>
 
-                <button onClick={() => setCommenting(!commenting)} className={styles.actionButton}>
+                <button onClick={() => setCommenting(!commenting)} style={styles.actionButton}>
                     <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z" />
                     </svg>
                 </button>
             </div>
 
-            <p className={styles.likes}>{postData.likes.length} Likes</p>
+            <p style={styles.likes}>{postData.likes.length} Likes</p>
             <p>{userData.username + " " + postData.content}</p>
 
-            <div className={styles.commentSection}>Ver los {postData.comments?.length || 0} comentarios</div>
+            <div style={styles.commentSection}>Ver los {postData.comments?.length || 0} comentarios</div>
 
             {commenting && (
-                <form onSubmit={handleCommentSubmit} className={styles.commentForm}>
+                <form onSubmit={handleCommentSubmit} style={styles.commentForm}>
                     <input
                         type="text"
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
                         placeholder="Escribe un comentario..."
                         required
-                        className={styles.commentInput}
+                        style={styles.commentInput}
                     />
-                    <button type="submit" className={styles.submitButton}>Enviar</button>
+                    <button type="submit" style={styles.submitButton}>Enviar</button>
                 </form>
             )}
 
-            {error && <p className={styles.errorMessage}>{error}</p>}
+            {error && <p style={styles.errorMessage}>{error}</p>}
         </div>
     );
 };
 
+
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#fafafa',
-    },
-    loginBox: {
-        backgroundColor: '#1c1e21',
-        padding: 30,
-        borderRadius: 10,
-        width: 350,
-        textAlign: 'center',
-    },
-    title: {
-        color: '#fff',
-        fontSize: 24,
-        marginBottom: 20,
-    },
-    textbox: {
-        width: '100%',
-        padding: 10,
-        borderColor: '#ccc',
-        borderWidth: 1,
-        borderRadius: 5,
-        marginBottom: 15,
-        backgroundColor: '#333',
-        color: '#fff',
-    },
-    errorMessage: {
-        color: 'red',
-        marginBottom: 10,
-    },
-    message: {
-        textAlign: 'center',
-        marginTop: 15,
-    },
-    registerLink: {
-        color: '#007bff',
-        textDecorationLine: 'underline',
-    },
+  post: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 16,
+    maxWidth: 400,
+    marginHorizontal: 'auto', // React Native doesn't have 'auto' margin, so use this to center
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    fontFamily: 'Arial', // Note: You might need to import custom fonts in your project
+    color: '#4a4a4a',
+  },
+  profileInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    width: '100%',
+    justifyContent: 'space-between',
+  },
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 50,
+    resizeMode: 'cover',
+  },
+  username: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  postImage: {
+    width: '100%',
+    height: 'auto',
+    marginTop: 10,
+    borderRadius: 8,
+  },
+  actions: {
+    flexDirection: 'row',
+    marginTop: 8,
+  },
+  actionButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    cursor: 'pointer', // React Native doesn't use cursor, so this won't have effect
+    padding: 4,
+    color: '#4a4a4a',
+  },
+  commentSection: {
+    color: 'grey',
+    marginTop: 8,
+  },
+  errorMessage: {
+    color: 'red',
+  },
+  commentForm: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 10,
+  },
+  commentInput: {
+    flexGrow: 1,
+    padding: 6,
+    borderWidth: 1,
+    borderColor: '#4a4a4a',
+    borderRadius: 4,
+    backgroundColor: '#fff',
+    color: '#4a4a4a',
+  },
+  submitButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: '#fff',
+    color: '#4a4a4a',
+    borderWidth: 1,
+    borderColor: '#4a4a4a',
+    borderRadius: 4,
+    cursor: 'pointer',
+    marginLeft: 8,
+  },
+  modal: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    zIndex: 1000,
+    left: 0,
+    top: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    position: 'relative',
+  },
+  close: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    cursor: 'pointer', // React Native doesn't use cursor
+    fontSize: 24,
+  },
+  optionsButton: {
+    backgroundColor: 'transparent',
+  },
+  likes: {
+    textAlign: 'left',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginTop: -3,
+    marginLeft: 5,
+  },
 });
+
 
 export default Post;
 
