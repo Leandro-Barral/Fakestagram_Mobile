@@ -2,7 +2,7 @@ const URL = "http://localhost:3001/api/";
 
 export const getPosts = async () => {
     try {
-        const token = localStorage.getItem('token');
+        const token = AsyncStorage.getItem('token');
 
         if (!token) {
             return { success: false, message: 'Token no disponible. Por favor, inicia sesión.' };
@@ -55,7 +55,7 @@ export const getPosts = async () => {
 
 export const commentPost = async (comment, postID) => {
     try {
-        const token = localStorage.getItem('token');
+        const token = AsyncStorage.getItem('token');
 
         if (!token) {
             return { success: false, message: 'Token no disponible. Por favor, inicia sesión.' };
@@ -102,7 +102,7 @@ export const commentPost = async (comment, postID) => {
 
 export const removeComment = async (commentID, postID) => {
     try {
-        const token = localStorage.getItem('token');
+        const token = AsyncStorage.getItem('token');
 
         if (!token) {
             return { success: false, message: 'Token no disponible. Por favor, inicia sesión.' };
@@ -144,7 +144,7 @@ export const removeComment = async (commentID, postID) => {
 
 export const getComment = async (commentID) => {
     try {
-        const token = localStorage.getItem('token');
+        const token = AsyncStorage.getItem('token');
 
         if (!token) {
             return { success: false, message: 'Token no disponible. Por favor, inicia sesión.' };
@@ -183,7 +183,7 @@ export const getComment = async (commentID) => {
 
 export const likePost = async (postID) => {
     try {
-        const token = localStorage.getItem('token');
+        const token = AsyncStorage.getItem('token');
 
         if (!token) {
             return { success: false, message: 'Token no disponible. Por favor, inicia sesión.' };
@@ -224,7 +224,7 @@ export const likePost = async (postID) => {
 
 export const removeLike = async (postID) => {
     try {
-        const token = localStorage.getItem('token');
+        const token = AsyncStorage.getItem('token');
 
         if (!token) {
             return { success: false, message: 'Token no disponible. Por favor, inicia sesión.' };

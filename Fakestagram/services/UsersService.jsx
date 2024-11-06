@@ -53,8 +53,8 @@ export const login = async (loginData) => {
             console.log(data);
             //Manejo de Token con Local Storage
             if (data.token && data._id) {
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('userId', data._id);
+                AsyncStorage.setItem('token', data.token);
+                AsyncStorage.setItem('userId', data._id);
                 return {
                     success: true,
                     message: 'Login exitoso',
@@ -78,7 +78,7 @@ export const login = async (loginData) => {
 
 export const getUser = async (id) => {
     try {
-        const token = localStorage.getItem('token');
+        const token = AsyncStorage.getItem('token');
 
         if (!token) {
             return { success: false, message: 'Token no disponible. Por favor, inicia sesión.' };
@@ -114,7 +114,7 @@ export const getUser = async (id) => {
 
 export const putUser = async (id, newData) => {
     try {
-        const token = localStorage.getItem('token');
+        const token = AsyncStorage.getItem('token');
 
         if (!token) {
             return { success: false, message: 'Token no disponible. Por favor, inicia sesión.' };
