@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import React from 'react-native';
 //import { useAuth } from '../hooks/useAuth';
 
 export default function RootLayout() {
