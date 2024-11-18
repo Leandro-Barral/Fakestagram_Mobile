@@ -1,186 +1,164 @@
 import React, { useEffect, useState } from "react";
-import './MyProfile.css'; 
-import Footer from "../../Components/Footer/Footer";
+import { View, Text, Image, StyleSheet, FlatList, Modal, TextInput, TouchableOpacity, Button } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { getUser } from "../../Services/UsersService";
-import { useNavigate } from "react-router-dom";
 import { getPosts } from "../../Services/PostsService";
-import defaultPhoto from "../../assets/defaultpic.jpg"
+import Footer from "../../Components/Footer/Footer"; // Adaptar el componente Footer a React Native
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Para almacenamiento local
+import * as ImagePicker from 'react-native-image-picker';
+
+const defaultPhoto = require("../../assets/defaultpic.jpg");
 
 const MyProfile = () => {
-  /* Usuario de Ejemplo
-  const [user, setUser] = useState({
-    name: "Mateo",
-    username: "mateo123",
-    bio: "Estudiante en UCU.",
-    profilePicture: "https://i.pinimg.com/736x/37/8a/27/378a270e775265622393da8c0527417e.jpg",
-    postsCount: 153,
-    friendsCount: 209,
-  */
-
-  const navigate = useNavigate();
-  const userId = localStorage.getItem('userId');
-  console.log(userId);
-  const [user, setUser] = useState({});
+  const navigation = useNavigation();
+  const [user, setUser] = useState(null);
   const [myPosts, setMyPosts] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newPostData, setNewPostData] = useState({ imageUrl: "", description: "" });
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    if(!userId){
-      console.log("Deberia ir al login")
-      navigate('/')
-    }
-    else{
-      const fetchUser = async () => {
-        console.log(userId);
-        const userObject = await getUser(userId);
-        console.log(userObject)
-        setUser(userObject.data.user);
-        setMyPosts(userObject.data.posts)
+    const fetchData = async () => {
+      const userId = await AsyncStorage.getItem("userId");
+      if (!userId) {
+        navigation.navigate("Login"); // Ir a la pantalla de inicio de sesión
+        return;
       }
-      const fetchPosts = async() => {
-        const postsObject = await getPosts();
-        console.log(postsObject.data);
-        postsObject.data.forEach(post => {
-          if(post.user === userId){
-            setMyPosts(prev => [...prev, post]);
-          } 
-        });
+
+      try {
+        const userResponse = await getUser(userId);
+        setUser(userResponse.data.user);
+
+        const postsResponse = await getPosts();
+        const userPosts = postsResponse.data.filter((post) => post.user === userId);
+        setMyPosts(userPosts);
+      } catch (error) {
+        console.error("Error fetching data:", error);
       }
-      fetchUser();
-      fetchPosts();
-    }
-  }, [])
-  
+    };
 
+    fetchData();
+  }, []);
 
-  
-
-  // Estado para controlar el modal y los datos de la nueva publicación
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newPostData, setNewPostData] = useState({
-    imageUrl: "",
-    description: "",
-  });
-
-  const [errorMessage, setErrorMessage] = useState(""); // Para almacenar el mensaje de error
-
-  // Función para abrir el modal
   const openModal = () => setIsModalOpen(true);
 
-  // Función para cerrar el modal
   const closeModal = () => {
-    setNewPostData({ imageUrl: "", description: "" }); // Resetea los datos
-    setErrorMessage(""); // Resetea el mensaje de error
+    setNewPostData({ imageUrl: "", description: "" });
+    setErrorMessage("");
     setIsModalOpen(false);
   };
 
-  // Función para manejar la subida de la nueva imagen
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setNewPostData((prevData) => ({
-        ...prevData,
-        imageUrl: URL.createObjectURL(file), // Mostramos la imagen localmente
+  const handleImageChange = async () => {
+    const result = await ImagePicker.launchImageLibrary({
+      mediaType: 'photo',
+      includeBase64: true,
+    });
+
+    if (result.assets) {
+      setNewPostData((prev) => ({
+        ...prev,
+        imageUrl: result.assets[0].uri,
       }));
-      setErrorMessage(""); // Limpiar el mensaje de error si selecciona una imagen
+      setErrorMessage("");
     }
   };
 
-  // Función para manejar el cambio de descripción
-  const handleDescriptionChange = (event) => {
-    setNewPostData((prevData) => ({
-      ...prevData,
-      description: event.target.value,
-    }));
+  const handleDescriptionChange = (text) => {
+    setNewPostData((prev) => ({ ...prev, description: text }));
   };
 
-  // Función para subir la nueva publicación
   const handleUpload = () => {
-    // Validación: Verificar si se ha seleccionado una imagen
     if (!newPostData.imageUrl) {
       setErrorMessage("Debes subir una foto antes de publicar.");
       return;
     }
 
     const newPost = {
-      id: user.posts.length + 1,
+      id: myPosts.length + 1,
       imageUrl: newPostData.imageUrl,
-      caption: newPostData.description || "Nueva publicación", // Si no hay descripción, usar un texto por defecto
+      caption: newPostData.description || "Nueva publicación",
     };
 
-    // Actualizamos el estado del usuario agregando la nueva publicación
-    setUser((prevUser) => ({
-      ...prevUser,
-      posts: [newPost, ...prevUser.posts], // Agregar al principio de la lista
-      postsCount: prevUser.postsCount + 1, // Incrementamos el conteo de posts
-    }));
-
-    // Cerramos el modal
+    setMyPosts([newPost, ...myPosts]);
     closeModal();
   };
 
-
-  console.log(myPosts);
-
   return (
-     user && <div className="profile">
-      <div className="profile-header">
-        <img src={user.profilePicture ? user.profilePicture : defaultPhoto} alt="Profile" className="profile-picture" />
-        
-        <div className="profile-info">
-          <h2>{user.name}</h2>
-          <p>@{user.username}</p>
-          <p>{user.bio}</p>
-        </div>
-        
-        <div className="profile-stats">
-          <div>
-            <span>{user.postsCount}</span>
-            <p>Posts</p>
-          </div>
-          <div>
-            <span>{user.friendsCount}</span>
-            <p>Friends</p>
-          </div>
-        </div>
-
-        <button className="profile-edit-button">Edit profile</button>
-      </div>
-
-      <div className="profile-posts">
-        {myPosts.length==0 && myPosts.map((post) => (
-          <div key={post._id} className="profile-post">
-            <img src={post.image} alt="Post" className="post-image" />
-            {post.content}
-          </div>
-        ))}
-      </div>
-      
-      {/* Pasamos la función openModal al Footer */}
-      <Footer onOpenModal={openModal} />
-
-      {/* Modal de subida de imagen */}
-      {isModalOpen && (
-        <div className="modal">
-          <div className="modal-content">
-            <h2>Subir una nueva publicación</h2>
-            <input type="file" accept="image/*" onChange={handleImageChange} />
+    user && (
+      <View style={styles.profile}>
+        <View style={styles.profileHeader}>
+          <Image
+            source={user.profilePicture ? { uri: user.profilePicture } : defaultPhoto}
+            style={styles.profilePicture}
+          />
+          <View style={styles.profileInfo}>
+            <Text style={styles.name}>{user.name}</Text>
+            <Text style={styles.username}>@{user.username}</Text>
+            <Text style={styles.bio}>{user.bio}</Text>
+          </View>
+          <View style={styles.profileStats}>
+            <View style={styles.stat}>
+              <Text style={styles.statNumber}>{user.postsCount}</Text>
+              <Text>Posts</Text>
+            </View>
+            <View style={styles.stat}>
+              <Text style={styles.statNumber}>{user.friendsCount}</Text>
+              <Text>Friends</Text>
+            </View>
+          </View>
+        </View>
+        <FlatList
+          data={myPosts}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.post}>
+              <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
+              <Text>{item.caption}</Text>
+            </View>
+          )}
+        />
+        <Footer onOpenModal={openModal} />
+        <Modal visible={isModalOpen} animationType="slide">
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Subir una nueva publicación</Text>
+            <Button title="Seleccionar Imagen" onPress={handleImageChange} />
             {newPostData.imageUrl && (
-              <img src={newPostData.imageUrl} alt="Preview" className="image-preview" />
+              <Image source={{ uri: newPostData.imageUrl }} style={styles.imagePreview} />
             )}
-            <textarea
+            <TextInput
+              style={styles.input}
               placeholder="Escribe una descripción..."
               value={newPostData.description}
-              onChange={handleDescriptionChange}
-              className="description-box"  
+              onChangeText={handleDescriptionChange}
             />
-            {errorMessage && <p className="error-message">{errorMessage}</p>} {/* Mensaje de error */}
-            <button onClick={handleUpload}>Subir</button>
-            <button onClick={closeModal}>Cancelar</button>
-          </div>
-        </div>
-      )}
-    </div>
+            {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
+            <Button title="Subir" onPress={handleUpload} />
+            <Button title="Cancelar" onPress={closeModal} />
+          </View>
+        </Modal>
+      </View>
+    )
   );
 };
+
+const styles = StyleSheet.create({
+  profile: { flex: 1, padding: 16, backgroundColor: "#fff" },
+  profileHeader: { alignItems: "center", marginBottom: 16 },
+  profilePicture: { width: 100, height: 100, borderRadius: 50 },
+  profileInfo: { alignItems: "center", marginVertical: 8 },
+  name: { fontSize: 20, fontWeight: "bold" },
+  username: { fontSize: 16, color: "gray" },
+  bio: { textAlign: "center", marginVertical: 8 },
+  profileStats: { flexDirection: "row", justifyContent: "space-around", width: "100%" },
+  stat: { alignItems: "center" },
+  statNumber: { fontSize: 18, fontWeight: "bold" },
+  post: { marginBottom: 16 },
+  postImage: { width: "100%", height: 200, borderRadius: 8 },
+  modalContent: { flex: 1, padding: 16, justifyContent: "center" },
+  modalTitle: { fontSize: 20, marginBottom: 16 },
+  input: { borderWidth: 1, borderColor: "#ccc", padding: 8, marginBottom: 16 },
+  imagePreview: { width: "100%", height: 200, borderRadius: 8, marginVertical: 8 },
+  error: { color: "red", textAlign: "center", marginBottom: 8 },
+});
 
 export default MyProfile;

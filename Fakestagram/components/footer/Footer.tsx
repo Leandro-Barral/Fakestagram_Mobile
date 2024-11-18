@@ -1,84 +1,76 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet, Dimensions } from "react-native";
-import Logout from "../logout/logout";
+import { useNavigate } from "react-router-dom";
+import React from "react";
+import { View, TouchableOpacity, Image, StyleSheet } from 'react-native'; // Importa componentes de React Native
+import Logout from "../Logout/logout.tsx";
 
-interface FooterProps {
-  onOpenModal: () => void;
-}
+const Footer = ({ onOpenModal }) => {
+    const navigate = useNavigate();
 
-const Footer: React.FC<FooterProps> = ({ onOpenModal }) => {
-  return (
-    <View style={[styles.footer]}>
-      <TouchableOpacity style={styles.button} onPress={() => { /* navigate to Feed */ }}>
-        <Image source={{ uri: "https://cdn-icons-png.flaticon.com/512/25/25694.png" }} style={styles.icon} />
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.uploadButton} onPress={onOpenModal}>
-        <Image source={{ uri: "https://static-00.iconduck.com/assets.00/camera-icon-2048x1821-0b66mmq3.png" }} style={[styles.icon, styles.uploadIcon]} />
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={() => { /* navigate to Profile */ }}>
-        <Image source={{ uri: "https://i.pinimg.com/736x/37/8a/27/378a270e775265622393da8c0527417e.jpg" }} style={styles.profilePicture} />
-      </TouchableOpacity>
-      
-      <TouchableOpacity style={styles.logoutButton}>
-        <Logout />
-      </TouchableOpacity>
-    </View>
-  );
+    return (
+        <View style={styles.footer}>
+            <TouchableOpacity onPress={() => { navigate("/myfeed") }} style={styles.button}>
+                <Image 
+                    source={{uri: "https://cdn-icons-png.flaticon.com/512/25/25694.png"}} 
+                    style={styles.icon} 
+                />
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => { navigate("/myprofile") }} style={styles.button}>
+                <Image 
+                    source={{uri: "https://i.pinimg.com/736x/37/8a/27/378a270e775265622393da8c0527417e.jpg"}} 
+                    style={styles.profilePicture} 
+                />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.logoutButton}>
+                <Logout />
+            </TouchableOpacity>
+        </View>
+    );
 };
 
 const styles = StyleSheet.create({
-  footer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 10,
-    backgroundColor: "#fff",
-    borderTopWidth: 1,
-    borderTopColor: "#e6e6e6",
-    zIndex: 1000,
-  },
-  button: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  icon: {
-    width: 24,
-    height: 24,
-    opacity: 0.7,
-  },
-  iconHover: {
-    opacity: 1,
-  },
-  uploadButton: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  uploadIcon: {
-    width: 30,
-    height: 30,
-  },
-  profilePicture: {
-    width: 30,
-    height: 30,
-    borderRadius: 50,
-    borderWidth: 2,
-    borderColor: "#dbdbdb",
-  },
-  logoutButton: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  desktopFooter: {
-    padding: 20,
-  },
+    footer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        width: '100%',
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        padding: 10,
+        backgroundColor: '#fff',
+        borderTopWidth: 1,
+        borderTopColor: '#e6e6e6',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        zIndex: 1000,
+    },
+    button: {
+        backgroundColor: 'transparent',
+        borderWidth: 0,
+        cursor: 'pointer',
+    },
+    icon: {
+        width: 24,
+        height: 24,
+        opacity: 0.7,
+    },
+    profilePicture: {
+        width: 30,
+        height: 30,
+        borderRadius: 50,
+        borderWidth: 2,
+        borderColor: '#dbdbdb',
+        marginRight: 30,
+    },
+    logoutButton: {
+        position: 'relative',
+        top: -5,
+    },
 });
 
 export default Footer;
