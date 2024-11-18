@@ -1,16 +1,20 @@
 import { Stack } from 'expo-router';
-//import { useAuth } from '../hooks/useAuth';
+import { useAuth, AuthProvider } from '../hooks/useAuth';
 
 export default function RootLayout() {
-    //const { isAuthenticated } = useAuth();
+    const {user, loading} = useAuth();
+
+    if (loading) return null;
 
     return (
-        <Stack>
-            {false ? (
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            ) : (
-                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            )}
-        </Stack>
+        <AuthProvider>
+                <Stack>
+                {user ? (
+                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                ) : (
+                    <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+                )}
+            </Stack>
+        </AuthProvider>  
     );
 }
