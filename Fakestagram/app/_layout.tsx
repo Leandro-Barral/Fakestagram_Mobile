@@ -1,3 +1,4 @@
+import React from 'react-native';
 import { Stack } from 'expo-router';
 import { useAuth, AuthProvider } from '../hooks/useAuth';
 
