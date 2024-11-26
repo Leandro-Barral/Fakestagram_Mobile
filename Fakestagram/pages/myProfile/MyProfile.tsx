@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Image, StyleSheet, FlatList, Modal, TextInput, TouchableOpacity, Button } from "react-native";
+import { View, Text, Image, StyleSheet, FlatList, Modal, TextInput, Button } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { getUser } from "../../Services/UsersService";
 import { getPosts } from "../../Services/PostsService";
 import Footer from "../../Components/Footer/Footer"; // Adaptar el componente Footer a React Native
-import AsyncStorage from "@react-native-async-storage/async-storage"; // Para almacenamiento local
-import * as ImagePicker from 'react-native-image-picker';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ImagePicker from "react-native-image-picker";
 
 const defaultPhoto = require("../../assets/defaultpic.jpg");
 
@@ -16,16 +16,19 @@ const MyProfile = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newPostData, setNewPostData] = useState({ imageUrl: "", description: "" });
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
-      const userId = await AsyncStorage.getItem("userId");
-      if (!userId) {
-        navigation.navigate("Login"); // Ir a la pantalla de inicio de sesión
-        return;
-      }
-
       try {
+        setIsLoading(true);
+        const userId = await AsyncStorage.getItem("userId");
+        if (!userId) {
+          navigation.navigate("Login");
+          return;
+        }
+
         const userResponse = await getUser(userId);
         setUser(userResponse.data.user);
 
@@ -34,11 +37,14 @@ const MyProfile = () => {
         setMyPosts(userPosts);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setFetchError("No se pudieron cargar los datos.");
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [navigation]);
 
   const openModal = () => setIsModalOpen(true);
 
@@ -50,9 +56,14 @@ const MyProfile = () => {
 
   const handleImageChange = async () => {
     const result = await ImagePicker.launchImageLibrary({
-      mediaType: 'photo',
+      mediaType: "photo",
       includeBase64: true,
     });
+
+    if (result.didCancel) {
+      console.log("El usuario canceló la selección de la imagen.");
+      return;
+    }
 
     if (result.assets) {
       setNewPostData((prev) => ({
@@ -60,6 +71,8 @@ const MyProfile = () => {
         imageUrl: result.assets[0].uri,
       }));
       setErrorMessage("");
+    } else {
+      setErrorMessage("Error al seleccionar la imagen.");
     }
   };
 
@@ -83,6 +96,14 @@ const MyProfile = () => {
     closeModal();
   };
 
+  if (isLoading) {
+    return <Text style={styles.loading}>Cargando...</Text>;
+  }
+
+  if (fetchError) {
+    return <Text style={styles.error}>{fetchError}</Text>;
+  }
+
   return (
     user && (
       <View style={styles.profile}>
@@ -92,24 +113,24 @@ const MyProfile = () => {
             style={styles.profilePicture}
           />
           <View style={styles.profileInfo}>
-            <Text style={styles.name}>{user.name}</Text>
-            <Text style={styles.username}>@{user.username}</Text>
-            <Text style={styles.bio}>{user.bio}</Text>
+            <Text style={styles.name}>{user.name || "Usuario"}</Text>
+            <Text style={styles.username}>@{user.username || "Desconocido"}</Text>
+            <Text style={styles.bio}>{user.bio || "Sin descripción."}</Text>
           </View>
           <View style={styles.profileStats}>
             <View style={styles.stat}>
-              <Text style={styles.statNumber}>{user.postsCount}</Text>
+              <Text style={styles.statNumber}>{user.postsCount || 0}</Text>
               <Text>Posts</Text>
             </View>
             <View style={styles.stat}>
-              <Text style={styles.statNumber}>{user.friendsCount}</Text>
+              <Text style={styles.statNumber}>{user.friendsCount || 0}</Text>
               <Text>Friends</Text>
             </View>
           </View>
         </View>
         <FlatList
           data={myPosts}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
           renderItem={({ item }) => (
             <View style={styles.post}>
               <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
@@ -159,6 +180,7 @@ const styles = StyleSheet.create({
   input: { borderWidth: 1, borderColor: "#ccc", padding: 8, marginBottom: 16 },
   imagePreview: { width: "100%", height: 200, borderRadius: 8, marginVertical: 8 },
   error: { color: "red", textAlign: "center", marginBottom: 8 },
+  loading: { flex: 1, textAlign: "center", fontSize: 18, marginTop: 20 },
 });
 
 export default MyProfile;
