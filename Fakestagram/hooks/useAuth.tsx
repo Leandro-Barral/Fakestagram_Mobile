@@ -2,6 +2,7 @@ import { createContext, useState, useEffect, useContext, ReactNode } from 'react
 import * as SecureStore from 'expo-secure-store';
 import { useRouter } from 'expo-router';
 import { login, register } from '../services/UsersService';
+import React from 'react';
 
 // Definir los tipos para el contexto de autenticación
 interface AuthContextType {
@@ -40,12 +41,11 @@ function useProvideAuth() {
 
     useEffect(() => {
         const checkUser = async () => {
-            setLoading(true);
-            const token = await SecureStore.getItemAsync('userToken');
-            if (token) {
-                const userId = await SecureStore.getItemAsync('userId');
-                setUser({ token, userId });
-            }
+            /*const token = await SecureStore.getItemAsync('userToken');
+            const userId = await SecureStore.getItemAsync('userId');
+            if(token && userId){
+                setUser({token, userId});
+            }*/
             setLoading(false);
         };
         checkUser();
@@ -56,7 +56,7 @@ function useProvideAuth() {
         const result = await login(loginData);
         if (result.success) {
             setUser({ token: result.data.token, userId: result.data._id });
-            router.push('/');  // Redirigir al feed
+            router.push('/');
         } else {
             alert(result.message);
         }
@@ -68,7 +68,7 @@ function useProvideAuth() {
         const result = await register(registerData);
         if (result.success) {
             setUser({ token: result.data.token, userId: result.data._id });
-            router.push('/');  // Redirigir al feed
+            router.push('/');
         } else {
             alert(result.message);
         }
@@ -79,7 +79,7 @@ function useProvideAuth() {
         await SecureStore.deleteItemAsync('userToken');
         await SecureStore.deleteItemAsync('userId');
         setUser(null);
-        router.push('/login');  // Redirigir a la pantalla de login
+        router.push('/'); 
     };
 
     return {

@@ -1,35 +1,159 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { View, Text, Image, TouchableOpacity, TextInput, FlatList, StyleSheet, ActivityIndicator } from "react-native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { getUser } from "../../services/UsersService";
-import { commentPost, getPosts, likePost } from "../../Services/PostsService";
-import styles from "./post.module.css";
+import { commentPost, removeLike, getPosts, likePost } from "../../services/PostsService";
+import React from "react";
 
-const Post = () => {
-    const { id: postId } = useParams(); // Obtención de postId a través de useParams
+const styles = StyleSheet.create({
+    post: {
+        backgroundColor: "#fff",
+        borderRadius: 8,
+        padding: 16,
+        marginVertical: 8, // Lo añado del segundo conjunto, para separar posts
+        maxWidth: 400,
+        alignSelf: "center",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        fontFamily: "Arial",
+        color: "#4a4a4a",
+    },
+    profileInfo: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+        width: "100%",
+        justifyContent: "space-between",
+        marginBottom: 8, // Añadido para mejor separación visual
+    },
+    profileImage: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        marginRight: 8, // Añadido para separación de imagen y texto
+    },
+    username: {
+        fontSize: 18,
+        fontWeight: "bold",
+    },
+    postImage: {
+        width: "100%",
+        height: 200,
+        marginTop: 10,
+        borderRadius: 8,
+    },
+    actions: {
+        flexDirection: "row",
+        marginTop: 8,
+    },
+    actionButton: {
+        padding: 4,
+        color: "#4a4a4a",
+        marginRight: 16, // Añadido para separar botones
+    },
+    commentSection: {
+        color: "grey",
+        marginTop: 8,
+    },
+    errorMessage: {
+        color: "red",
+        marginTop: 8, // Añadido para mantener consistencia
+    },
+    commentForm: {
+        flexDirection: "row",
+        gap: 8,
+        marginTop: 10,
+    },
+    commentInput: {
+        flex: 1,
+        padding: 6,
+        borderWidth: 1,
+        borderColor: "#4a4a4a",
+        borderRadius: 4,
+        backgroundColor: "#fff",
+        color: "#4a4a4a",
+    },
+    submitButton: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        backgroundColor: "#fff",
+        borderColor: "#4a4a4a",
+        borderWidth: 1,
+        borderRadius: 4,
+        marginLeft: 8,
+    },
+    modal: {
+        justifyContent: "center",
+        alignItems: "center",
+        position: "absolute",
+        zIndex: 1000,
+        left: 0,
+        top: 0,
+        width: "100%",
+        height: "100%",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+    },
+    modalContent: {
+        backgroundColor: "white",
+        padding: 20,
+        borderRadius: 5,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+    },
+    close: {
+        position: "absolute",
+        top: 10,
+        right: 10,
+        fontSize: 24,
+    },
+    optionsButton: {
+        backgroundColor: "transparent",
+    },
+    likes: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginTop: -3,
+        marginLeft: 5,
+    },
+    loader: { 
+        flex: 1, 
+        justifyContent: "center", 
+        alignItems: "center" 
+    }
+});
+
+
+const Post = ({ postId, publisher, caption, likes, createdAt, imageUrl, comments }: any) => {
+    const route = useRoute();
+    const navigation = useNavigation();
 
     const [postData, setPostData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [userData, setUserData] = useState(null);
-    const [newComment, setNewComment] = useState('');
+    const [newComment, setNewComment] = useState("");
     const [liked, setLiked] = useState(false);
     const [commenting, setCommenting] = useState(false);
-    const [error, setError] = useState('');
+    const [error, setError] = useState("");
     const [optionsVisible, setOptionsVisible] = useState(false);
+    const [showComments, setShowComments] = useState(false);
 
     useEffect(() => {
+        const postIdFromRoute = route.params?.postId;
+        const id = postIdFromRoute || postId;
+
         const fetchData = async () => {
             setLoading(true);
             try {
-                const postsResponse = await getPosts();
-                const post = postsResponse.data.find(post => post._id === postId);
-                if (!post) {
+                const response = await getPosts();
+                const post = response.data.find((post: any) => post._id === id);
+                if (post) {
+                    setPostData(post);
+                } else {
                     setError("Publicación no encontrada");
-                    return;
                 }
-
-                setPostData(post);
-                const userResponse = await getUser(post.user);
-                setUserData(userResponse);
             } catch (err) {
                 setError("Error al cargar la publicación");
             } finally {
@@ -37,120 +161,120 @@ const Post = () => {
             }
         };
 
-        if (postId) fetchData();
-    }, [postId]);
+        fetchData();
+    }, [route.params?.postId]);
+
+    useEffect(() => {
+        if (postData) {
+            const userId = "currentUserId"; // Reemplaza con la lógica para obtener el ID del usuario actual
+            setLiked(postData.likes.includes(userId));
+        }
+    }, [postData]);
 
     const handleLike = async () => {
         try {
-            const response = await likePost(postId);
+            const userId = "currentUserId"; // Reemplaza con la lógica para obtener el ID del usuario actual
+            const response = liked
+                ? await removeLike(postData._id)
+                : await likePost(postData._id);
+
             if (response.success) {
                 setLiked(!liked);
+                setPostData((prevData: any) => ({
+                    ...prevData,
+                    likes: liked
+                        ? prevData.likes.filter((id: any) => id !== userId)
+                        : [...prevData.likes, userId],
+                }));
             } else {
-                setError(response.message || "Error al dar 'Me gusta'");
+                setError(response.message || "Error al actualizar 'Me gusta'");
             }
         } catch (err) {
-            setError("Error al dar 'Me gusta'");
+            setError("Error al actualizar 'Me gusta'");
         }
     };
 
-    const handleCommentSubmit = async (e) => {
-        e.preventDefault();
+    const handleCommentSubmit = async () => {
         try {
-            const result = await commentPost(newComment, postId);
+            const result = await commentPost(newComment, postData._id);
             if (result.success) {
-                setNewComment('');
+                setNewComment("");
                 setCommenting(false);
-                setPostData(prev => ({
-                    ...prev,
-                    comments: [...(prev.comments || []), result.data],
-                }));
             } else {
                 setError(result.message);
             }
         } catch (err) {
-            setError("Error al comentar");
+            setError("Error al enviar comentario");
         }
     };
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>{error}</div>;
-    if (!postData || !userData) return <div>No se pudo encontrar la publicación :C</div>;
+    if (loading) return <ActivityIndicator style={styles.loader} size="large" />;
+    if (error) return <Text style={styles.errorMessage}>{error}</Text>;
+    if (!postData) return <Text style={styles.errorMessage}>Publicación no encontrada</Text>;
 
-    return (
-        <div className={styles.post}>
-            <div className={styles.profileInfo}>
-                <img
-                    src={userData.profileImage || "https://i.pinimg.com/736x/37/8a/27/378a270e775265622393da8c0527417e.jpg"}
-                    alt={`Foto de perfil de ${userData.username}`}
-                    className={styles.profileImage}
-                />
-                <h2 className={styles.username}>{userData.username}</h2>
-                <button onClick={() => setOptionsVisible(!optionsVisible)} className={styles.optionsButton}>
-                    <svg width="20" height="20" viewBox="0 0 24 24">
-                        <circle cx="5" cy="12" r="2" />
-                        <circle cx="12" cy="12" r="2" />
-                        <circle cx="19" cy="12" r="2" />
-                    </svg>
-                </button>
-
-                {optionsVisible && (
-                    <div className={styles.modal}>
-                        <div className={styles.modalContent}>
-                            <span className={styles.close} onClick={() => setOptionsVisible(false)}>&times;</span>
-                            <button className={styles.submitButton}>Compartir</button>
-                            <button className={styles.submitButton}>Reportar</button>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            <img
-                src={postData.image}
-                alt={`Publicación ${postId}`}
-                className={styles.postImage}
-            />
-
-            <div className={styles.actions}>
-                <button onClick={handleLike} className={styles.actionButton}>
-                    {liked ? (
-                        <svg width="24" height="24" fill="red" viewBox="0 0 24 24">
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                        </svg>
-                    ) : (
-                        <svg width="24" height="24" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                        </svg>
-                    )}
-                </button>
-
-                <button onClick={() => setCommenting(!commenting)} className={styles.actionButton}>
-                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z" />
-                    </svg>
-                </button>
-            </div>
-
-            <p className={styles.likes}>{postData.likes.length} Likes</p>
-            <p>{postData.content}</p>
-            <div className={styles.commentSection}>Ver los {postData.comments?.length || 0} comentarios</div>
-
-            {commenting && (
-                <form onSubmit={handleCommentSubmit} className={styles.commentForm}>
-                    <input
-                        type="text"
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        placeholder="Escribe un comentario..."
-                        required
-                        className={styles.commentInput}
+    return ( 
+        <View style={styles.post}>
+            <View style={styles.profileInfo}>
+                <TouchableOpacity onPress={() => navigation.navigate("Profile", { userId: postData.publisher._id })}>
+                    <Image
+                        source={{ uri: postData.publisher.profilePicture || defaultPhoto }}
+                        style={styles.profileImage}
                     />
-                    <button type="submit" className={styles.submitButton}>Enviar</button>
-                </form>
+                </TouchableOpacity>
+                <Text style={styles.username} onPress={() => navigation.navigate("Profile", { userId: postData.publisher._id })}>
+                    {postData.publisher.username}
+                </Text>
+            </View>
+    
+            <Image source={{ uri: postData.imageUrl }} style={styles.postImage} />
+    
+            <View style={styles.actions}>
+                <TouchableOpacity onPress={handleLike} style={styles.actionButton}>
+                    <Text>{liked ? "💖" : "🤍"}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setCommenting(!commenting)} style={styles.actionButton}>
+                    <Text>💬</Text>
+                </TouchableOpacity>
+            </View>
+    
+            <Text style={styles.likes}>{postData.likes.length} Likes</Text>
+            <Text>
+                <Text style={styles.username}>{postData.publisher.username} </Text>
+                {postData.caption}
+            </Text>
+    
+            <TouchableOpacity onPress={() => setShowComments(!showComments)}>
+                <Text style={styles.commentSection}>
+                    {showComments ? "Ocultar comentarios" : `Ver comentarios (${postData.comments?.length || 0})`}
+                </Text>
+            </TouchableOpacity>
+    
+            {showComments && (
+                <FlatList
+                    data={postData.comments}
+                    keyExtractor={(item) => item._id}
+                    renderItem={({ item }) => <Text>{item.text}</Text>}
+                />
             )}
-
-            {error && <p className={styles.errorMessage}>{error}</p>}
-        </div>
+    
+            {commenting && (
+                <View style={styles.commentForm}>
+                    <TextInput
+                        value={newComment}
+                        onChangeText={setNewComment}
+                        placeholder="Escribe un comentario..."
+                        style={styles.commentInput}
+                    />
+                    <TouchableOpacity onPress={handleCommentSubmit} style={styles.submitButton}>
+                        <Text>Enviar</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+    
+            {error && <Text style={styles.errorMessage}>{error}</Text>}
+        </View>
     );
+    
 };
 
 export default Post;

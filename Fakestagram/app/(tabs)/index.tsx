@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
-import Post from '../post/Post';
-import Footer from '../footer/Footer';
-import Title from '../Title/Title';
+import Post from '../../components/post/Post';
+import Footer from '../../components/footer/Footer';
+import Title from '../../components/Title/Title';
 import { getPosts } from '../../services/PostsService';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRouter } from 'expo-router';
 
 const Feed = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigation = useNavigation();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const response = await getPosts();
         if (response.message === "Token no disponible. Por favor, inicia sesión.") {
-          navigation.navigate('Login'); // Cambia la ruta según tu configuración
+          router.push('(auth)');
         } else {
           setPosts(response.data);
         }
