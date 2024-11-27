@@ -9,7 +9,6 @@
 5) Con el mouse, arrastra la carpeta del repositorio hacia el icono de Visual Studio Code, o ábrela directamente en Visual Studio Code.
 6) Repitan los pasos anteriores con el siguiente repositorio (https://github.com/bruno-argenta/fake_instagram.git).
 7) Dentro de Visual Studio Code, abre una terminal e ingresa los siguientes comandos en la carpeta nombrada fake_instagram:
-    - cd fake_instagram
     - cd api-node
     - npm install
     - node server.js (La terminal debería mostrar "Server running on port 3001" y "MongoDB connected")
