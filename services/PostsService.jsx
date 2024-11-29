@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-const URL = "https://fakestagram.loca.lt/api/";
+const URL = "http://localhost:3001/api/";
 
 
 export const getPosts = async () => {

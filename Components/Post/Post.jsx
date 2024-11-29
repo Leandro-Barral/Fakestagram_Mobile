@@ -8,9 +8,10 @@ import { useAuth } from "../../useAuth";
 import { useRoute } from "@react-navigation/native";
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { backendURL } from "../../Constants";
 
 const { user } = useAuth();
-const defaultPhoto = "";
+const defaultPhoto = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png";
 
 const styles = StyleSheet.create({
     post: {
@@ -158,6 +159,7 @@ const Post = ({ postId, publisher, caption, likes, createdAt, imageUrl, comments
                 const post = response.data.find((post) => post._id === id);
                 if (post) {
                     setPostData(post);
+                    console.log(post);
                 } else {
                     setError("Publicación no encontrada");
                 }
@@ -222,18 +224,18 @@ const Post = ({ postId, publisher, caption, likes, createdAt, imageUrl, comments
     return ( 
         <View style={styles.post}>
             <View style={styles.profileInfo}>
-                <TouchableOpacity onPress={() => router.push(`Profile/${postData.user._id}`)}>
+                <TouchableOpacity onPress={() => router.push(`profile/${postData.user._id}`)}>
                     <Image
-                        source={{ uri: postData.user.profilePicture ? postData.user.profilePicture : defaultPhoto }}
+                        source={{ uri: postData.user.profilePicture ? encodeURI(`${backendURL}${postData.user.profilePicture.replace(/\\/g, '/')}`) : defaultPhoto }}
                         style={styles.profileImage}
                     />
                 </TouchableOpacity>
-                <Text style={styles.username} onPress={() => router.push(`Profile/${postData.user._id}`)}>
+                <Text style={styles.username} onPress={() => router.push(`profile/${postData.user._id}`)}>
                     {postData.user.username}
                 </Text>
             </View>
     
-            <Image source={{ uri: postData.imageUrl ? postData.imageUrl : defaultPhoto }} style={styles.postImage} />
+            <Image source={{ uri: postData.imageUrl ? encodeURI(`${backendURL}${postData.imageUrl.replace(/\\/g, '/')}`) : defaultPhoto }} style={styles.postImage} />
     
             <View style={styles.actions}>
                 <TouchableOpacity onPress={handleLike} style={styles.actionButton}>

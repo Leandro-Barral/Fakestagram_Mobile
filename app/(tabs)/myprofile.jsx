@@ -20,7 +20,7 @@ import { backendURL } from "../../Constants";
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const defaultPhoto = "";
+const defaultPhoto = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png";
 
 const MyProfile = () => {
     const router = useRouter();
@@ -51,6 +51,7 @@ const MyProfile = () => {
                     const userObject = await getUser(userId);
                     setUser(userObject.data.user);
                     setMyPosts(userObject.data.posts);
+                    console.log(userObject);
                 }
             } 
         };
@@ -125,8 +126,8 @@ const MyProfile = () => {
                     data={myPosts}
                     keyExtractor={(item) => item._id}
                     renderItem={({ item }) => (
-                        <TouchableOpacity onPress={() => router.push(`Post${item._id}`)}>
-                            <Image source={{ uri: `${backendURL}${item.imageUrl}` }} style={styles.postImage} />
+                        <TouchableOpacity onPress={() => router.push(`posts/${item._id}`)}>
+                            <Image source={{ uri: encodeURI(`${backendURL}${item.imageUrl.replace(/\\/g, '/')}`) }} style={styles.postImage} />
                         </TouchableOpacity>
                     )}
                 />
