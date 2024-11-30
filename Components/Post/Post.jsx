@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
 });
 
 
-const Post = ({ postId, publisher, caption, likes, createdAt, imageUrl, comments }) => {
+const Post = ({ postObject }) => {
     const route = useRoute();
     const router = useRouter();
 
@@ -149,14 +149,11 @@ const Post = ({ postId, publisher, caption, likes, createdAt, imageUrl, comments
     const [showComments, setShowComments] = useState(false);
 
     useEffect(() => {
-        const postIdFromRoute = route.params?.postId;
-        const id = postIdFromRoute || postId;
 
         const fetchData = async () => {
             setLoading(true);
             try {
-                const response = await getPosts();
-                const post = response.data.find((post) => post._id === id);
+                const post = postObject
                 if (post) {
                     setPostData(post);
                     console.log(post);
@@ -171,7 +168,7 @@ const Post = ({ postId, publisher, caption, likes, createdAt, imageUrl, comments
         };
 
         fetchData();
-    }, [route.params?.postId]);
+    }, []);
 
     useEffect(() => {
         if (postData) {

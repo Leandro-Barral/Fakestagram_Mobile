@@ -66,29 +66,66 @@ const MyProfile = () => {
     };
 
     const handleImagePick = async () => {
-        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (!permissionResult.granted) {
-            Alert.alert("Permiso denegado", "Se necesita acceso a la galería para continuar.");
-            return;
-        }
-
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            quality: 1,
-        });
-
-        if (!result.cancelled) {
-            setNewPostData((prevData) => ({
-                ...prevData,
-                imageUrl: result.uri ? result.uri : defaultPhoto,
-            }));
-            setFile(result);
+        try {
+            const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (!permissionResult.granted) {
+                Alert.alert("Permiso denegado", "Se necesita acceso a la galería para continuar.");
+                return;
+            }
+    
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ['images'],
+                allowsEditing: true,
+                quality: 1,
+                base64: false,
+            });
+            console.log('Resultado de ImagePicker:', result);
+            
+            if (!result.canceled) {
+                setNewPostData((prevData) => ({
+                    ...prevData,
+                    imageUrl: result.assets[0].uri,
+                }));
+                console.log(result);
+                setFile(result.assets[0]);
+            }
+        } catch (error) {
+            console.error("Error al abrir la galería:", error);
+            Alert.alert("Error", "No se pudo abrir la galería.");
         }
     };
 
+    const handleTakePicture = async () => {
+        try {
+            const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+            if (!permissionResult.granted) {
+                Alert.alert("Permiso denegado", "Se necesita acceso a la cámara para continuar.");
+                return;
+            }
+    
+            const result = await ImagePicker.launchCameraAsync({
+                allowsEditing: true,
+                quality: 1,
+                base64: false,
+            });
+    
+            if (!result.canceled) {
+                setNewPostData((prevData) => ({
+                    ...prevData,
+                    imageUrl: result.assets[0].uri,
+                }));
+                console.log(result);
+                setFile(result.assets[0]);
+            }
+        } catch (error) {
+            console.error("Error al usar la cámara:", error);
+            Alert.alert("Error", "No se pudo abrir la cámara.");
+        }
+    };
+    
+
     const handleUpload = async () => {
-        if (!newPostData.imageUrl) {
+        if (!newPostData.imageUrl || !file) {
             setErrorMessage("Debes subir una foto antes de publicar.");
             return;
         }
@@ -139,7 +176,8 @@ const MyProfile = () => {
             <Modal visible={isModalOpen} animationType="slide">
                 <View style={styles.modalContent}>
                     <Text style={styles.modalTitle}>Subir una nueva publicación</Text>
-                    <Button title="Seleccionar imagen" onPress={handleImagePick} />
+                    <Button title="Buscar en Galería" onPress={handleImagePick} />
+                    <Button title="Usar Cámara" onPress={handleTakePicture} />
                     {newPostData.imageUrl && (
                         <Image source={{ uri: newPostData.imageUrl }} style={styles.imagePreview} />
                     )}

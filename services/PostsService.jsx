@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-const URL = "http://localhost:3001/api/";
+const URL = "https://fakestagram.loca.lt/api/";
 
 
 export const getPosts = async () => {
@@ -272,6 +272,59 @@ export const removeLike = async (postID) => {
 
         return { success: false, message: `Error inesperado: ${res.status}` };
     } catch (error) {
+        return { success: false, message: `Error de conexión: ${error.message}` };
+    }
+};
+
+
+
+export const uploadPost = async (file, caption) => {
+    try {
+        const token = Platform.OS === 'android'
+            ? await SecureStore.getItemAsync('userToken')
+            : await AsyncStorage.getItem('userToken');
+
+        if (!token) {
+            return { success: false, message: 'Token no disponible. Por favor, inicia sesión.' };
+        }
+
+        const formData = new FormData();
+        formData.append('caption', caption);
+
+        if (file) {
+            const fileName = file.fileName
+            const fileType = file.type || `image/${fileName.split('.').pop()}`; 
+
+            formData.append('image', {
+                uri: file.uri,
+                name: fileName,
+                type: fileType,
+            });
+        }
+        console.log("URI: " + file.uri);
+        console.log("NAME: " + file.fileName);
+        console.log("TYPE: " + file.type);
+        console.log(formData);
+
+        const res = await fetch(`${URL}posts/upload`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+            body: formData,
+        });
+        
+
+        if (res.status === 201) {
+            const data = await res.json();
+            return { success: true, message: 'Imagen subida exitosamente', data };
+        }
+
+        const errorMessage = await res.text();
+        console.error("Error del servidor:", errorMessage);
+        return { success: false, message: `Error inesperado: ${res.status}` };
+    } catch (error) {
+        console.error(error.message);
         return { success: false, message: `Error de conexión: ${error.message}` };
     }
 };

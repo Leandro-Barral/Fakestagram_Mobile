@@ -48,11 +48,7 @@ const Feed = () => {
         renderItem={({ item }) => (
           <View style={styles.feedItem}>
             <Post
-              user={item.user}
-              caption={item.content}
-              likes={item.likes}
-              createdAt={item.createdAt}
-              postId={item._id}
+              postObject={item}
             />
           </View>
         )}
